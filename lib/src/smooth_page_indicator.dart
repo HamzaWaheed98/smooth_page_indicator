@@ -35,6 +35,9 @@ class SmoothPageIndicator extends StatefulWidget {
   /// Reports dot taps
   final OnDotClicked? onDotClicked;
 
+  final int? pageIndex;
+  final Duration animationDuration;
+
   /// Default constructor
   const SmoothPageIndicator({
     Key? key,
@@ -44,6 +47,8 @@ class SmoothPageIndicator extends StatefulWidget {
     this.textDirection,
     this.onDotClicked,
     this.effect = const WormEffect(),
+    this.pageIndex,
+    this.animationDuration = const Duration(milliseconds: 300),
   }) : super(key: key);
 
   @override
@@ -100,6 +105,19 @@ class _SmoothPageIndicatorState extends State<SmoothPageIndicator>
     updateSizeAndRotation();
   }
 
+
+  void _onDotClicked(int index) {
+    widget.controller.animateToPage(
+      index,
+      duration: widget.animationDuration,
+      curve: Curves.easeInOut,
+    );
+
+    if (widget.onDotClicked != null) {
+      widget.onDotClicked!(index);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -108,20 +126,26 @@ class _SmoothPageIndicatorState extends State<SmoothPageIndicator>
         offset: _offset,
         count: count,
         effect: effect,
-        onDotClicked: widget.onDotClicked,
+        onDotClicked: _onDotClicked,
         size: size,
         quarterTurns: quarterTurns,
       ),
     );
   }
 
+
+
   double get _offset {
-    try {
-      var offset =
-          widget.controller.page ?? widget.controller.initialPage.toDouble();
-      return offset % widget.count;
-    } catch (_) {
-      return widget.controller.initialPage.toDouble();
+    if (widget.pageIndex != null) {
+      return widget.pageIndex!.toDouble();
+    } else {
+      try {
+        var offset =
+            widget.controller.page ?? widget.controller.initialPage.toDouble();
+        return offset % widget.count;
+      } catch (_) {
+        return widget.controller.initialPage.toDouble();
+      }
     }
   }
 
